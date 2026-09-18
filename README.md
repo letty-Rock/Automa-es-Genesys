@@ -1,79 +1,127 @@
-Automação Genesys Cloud
+::: {align="center"}
 
-Automação de tarefas administrativas no Genesys Cloud usando OAuth
-Client Credentials e a API REST v2.
+☁️ Genesys Cloud Automation Toolkit
 
-O projeto centraliza autenticação, chamadas HTTP e tratamento de erros
-em genesys_api.py, enquanto config.py concentra região, credenciais
-e caminhos. Os scripts operacionais seguem um fluxo seguro com
-backup, DRY RUN, confirmação explícita e geração de logs.
+Automação segura de filas, skills e grupos via Genesys Cloud API
 
-Importante: não publique CLIENT_ID, CLIENT_SECRET, arquivos
-com dados reais de usuários ou outros dados sensíveis no repositório.
+Backup • DRY RUN • Validação • Logs • OAuth Client Credentials
+:::
 
-Funcionalidades
+✨ Sobre o projeto
 
-Script                          Finalidade                 Altera o Genesys?
+Este projeto reúne scripts Python para automatizar tarefas
+administrativas no Genesys Cloud usando a API REST v2.
 
-01_exportar_filas_skills.py   Backup das filas e                Não
-skills e geração
-dos CSVs
-normalizados
+A proposta é tornar operações em lote mais previsíveis, auditáveis e
+seguras. Antes das alterações, o projeto permite gerar backups; os
+scripts de escrita trabalham com DRY RUN por padrão, exigem
+confirmação para execução real e validam o estado após as chamadas à
+API.
 
-02_remover_filas_skills.py    Remove filas e                    Sim
-skills existentes
-com DRY RUN e
-confirmação
+[!IMPORTANT] Nunca publique CLIENT_SECRET, credenciais OAuth,
+arquivos com usuários reais ou dados internos da organização.
 
-03_adicionar_skills.py        Adiciona skills e                 Sim
-ajusta proficiency
-conforme
-skills.csv
+🧭 Visão geral
 
-04_adicionar_filas.py         Adiciona usuários                 Sim
-às filas conforme
-filas.csv
+                   Script                          O que faz        Altera o ambiente?
 
-05_adicionar_grupo.py         Adiciona usuários                 Sim
-de usuarios.csv
-ao grupo
-configurado
+       📦          `01_exportar_filas_skills.py`   Backup de filas          ❌
+                                                   e skills + CSVs 
+                                                   normalizados    
 
-Estrutura do projeto
+       🧹          `02_remover_filas_skills.py`    Remove                   ✅
+                                                   associações     
+                                                   existentes      
+
+       🧠          `03_adicionar_skills.py`        Adiciona skills          ✅
+                                                   e ajusta        
+                                                   proficiency     
+
+       👥          `04_adicionar_filas.py`         Adiciona                 ✅
+                                                   usuários às     
+                                                   filas           
+
+       🏷️          `05_adicionar_grupo.py`         Adiciona                 ✅
+                                                   usuários ao     
+                                                   grupo           
+                                                   configurado     
+
+       🔎          `consulta.py`                   Consulta fila e          ❌
+                                                   skill           
+                                                   separadamente   
+
+🔄 Fluxo operacional
+
+             ┌──────────────────────────────┐
+             │  01 • BACKUP DO AMBIENTE    │
+             └──────────────┬───────────────┘
+                            ↓
+             ┌──────────────────────────────┐
+             │  REVISAR CSVs E BACKUPS      │
+             └──────────────┬───────────────┘
+                            ↓
+             ┌──────────────────────────────┐
+             │  02 • REMOVER ASSOCIAÇÕES   │
+             │       DRY RUN → EXECUTE      │
+             └──────────────┬───────────────┘
+                            ↓
+             ┌──────────────────────────────┐
+             │  03 • APLICAR SKILLS         │
+             │       DRY RUN → EXECUTE      │
+             └──────────────┬───────────────┘
+                            ↓
+             ┌──────────────────────────────┐
+             │  04 • APLICAR FILAS          │
+             │       DRY RUN → EXECUTE      │
+             └──────────────┬───────────────┘
+                            ↓
+             ┌──────────────────────────────┐
+             │  05 • APLICAR GRUPO          │
+             │       DRY RUN → EXECUTE      │
+             └──────────────┬───────────────┘
+                            ↓
+             ┌──────────────────────────────┐
+             │  🔎 CONSULTA / VALIDAÇÃO     │
+             └──────────────────────────────┘
+
+[!TIP] Execute o 01 antes de qualquer operação em lote e preserve
+os arquivos históricos da pasta output.
+
+📁 Estrutura
 
 genesys/
-├── config.py
-├── genesys_api.py
-├── usuarios.csv
-├── filas.csv
-├── skills.csv
-├── 01_exportar_filas_skills.py
-├── 02_remover_filas_skills.py
-├── 03_adicionar_skills.py
-├── 04_adicionar_filas.py
-├── 05_adicionar_grupo.py
-├── consulta.py
-└── output/
+│
+├── ⚙️  config.py
+├── 🔌 genesys_api.py
+│
+├── 📄 usuarios.csv
+├── 📄 filas.csv
+├── 📄 skills.csv
+│
+├── 📦 01_exportar_filas_skills.py
+├── 🧹 02_remover_filas_skills.py
+├── 🧠 03_adicionar_skills.py
+├── 👥 04_adicionar_filas.py
+├── 🏷️  05_adicionar_grupo.py
+├── 🔎 consulta.py
+│
+└── 📂 output/
 
-Execute os comandos a partir da pasta do projeto. Os exemplos utilizam o
-launcher py do Windows.
+🚀 Começando
 
-Requisitos
+1. Requisitos
 
 Python 3
 
 Biblioteca requests
 
-OAuth Client configurado no Genesys Cloud com as permissões
-necessárias
-
-Instalação da dependência:
+OAuth Client do Genesys Cloud com as permissões necessárias
 
 py -m pip install requests
 
-Configuração
+2. Configure o ambiente
 
-O arquivo config.py é o ponto central de configuração.
+O config.py centraliza região, credenciais e arquivos utilizados.
 
 SAE1
 
@@ -101,13 +149,14 @@ USERS_FILE = "usuarios.csv"
 OUTPUT_DIR = "output"
 GROUP_DESTINO = "NOME_EXATO_DO_GRUPO"
 
-CLIENT_ID e CLIENT_SECRET devem pertencer ao mesmo ambiente definido
-por LOGIN_URL e API_URL. Não misture credenciais e URLs de
-organizações ou regiões diferentes.
+[!WARNING] CLIENT_ID e CLIENT_SECRET precisam pertencer ao
+ambiente indicado por LOGIN_URL e API_URL. Não misture credenciais
+entre organizações ou regiões.
 
-Autenticação e genesys_api.py
+🔐 Camada de API
 
-Todos os scripts utilizam a classe compartilhada GenesysAPI.
+Todos os scripts compartilham GenesysAPI, evitando duplicação de
+autenticação e tratamento HTTP.
 
 from genesys_api import GenesysAPI
 
@@ -119,7 +168,7 @@ dados = api.post("/api/v2/...", json={...})
 dados = api.put("/api/v2/...", json={...})
 dados = api.delete("/api/v2/...")
 
-A autenticação usa OAuth Client Credentials:
+OAuth
 
 POST {LOGIN_URL}/oauth/token
 Authorization: Basic base64(CLIENT_ID:CLIENT_SECRET)
@@ -127,120 +176,127 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials
 
-A camada compartilhada contempla:
+O que GenesysAPI centraliza
 
-GET, POST, PUT e DELETE;
+GET • POST • PUT • DELETE • reautenticação em 401 • tratamento
+de 429 • backoff • retry em 500/502/503/504 • paginação • mensagens
+detalhadas de erro.
 
-reautenticação em HTTP 401;
+📊 Formato dos dados
 
-tratamento de HTTP 429 com Retry-After/backoff;
-
-novas tentativas para erros transitórios 500, 502, 503 e
-504;
-
-paginação por get_all_pages() em endpoints que retornam
-entities;
-
-mensagens de exceção com método, URL, endpoint, HTTP e corpo da
-resposta.
-
-Arquivos CSV
-
-usuarios.csv
-
-Entrada dos scripts que processam uma lista de usuários.
+👤 usuarios.csv
 
 email
 usuario1@empresa.com
 usuario2@empresa.com
 
-O cabeçalho deve conter email.
+Usado principalmente pelos scripts 01 e 05.
 
-filas.csv
+👥 filas.csv
 
 email;user_id;fila;queue_id
 usuario1@empresa.com;UUID_USUARIO;Nome da Fila;UUID_FILA
 
-Cada linha representa uma associação entre usuário e fila. Em arquivos
-montados manualmente, user_id e queue_id podem ficar vazios. O
-script 04 consegue resolver o usuário pelo e-mail e a fila pelo nome.
+Cada linha representa uma associação usuário → fila.
 
-skills.csv
+user_id e queue_id podem ficar vazios em arquivos montados
+manualmente. O script 04 consegue resolver o usuário pelo e-mail e a
+fila pelo nome.
+
+🧠 skills.csv
 
 email;user_id;skill;skill_id;proficiency
-usuario1@empresa.com;UUID_USUARIO;Nome da Skill;UUID_SKILL;5
+usuario1@empresa.com;UUID_USUARIO;Nome da Skill;UUID_SKILL;5.0
 
-Cada linha representa uma associação entre usuário e skill.
-proficiency deve estar entre 0 e 5.
+Cada linha representa uma associação usuário → skill.
 
-No script 03, a skill é resolvida pelo nome no ambiente atual. O
-skill_id presente no CSV funciona como referência/backup e pode ser
-diferente entre ambientes.
+A proficiency deve ficar entre 0 e 5. O script 03 resolve a
+skill pelo nome no ambiente atual; o skill_id do CSV funciona como
+referência e pode ser diferente entre ambientes.
 
-01 - Exportar filas e skills
+🛠️ Scripts
 
-Registra o estado atual dos usuários antes das alterações.
+📦 01 · Exportar filas e skills
+
+Objetivo: registrar o estado atual antes das alterações.
 
 py .\01_exportar_filas_skills.py
 
-Arquivos gerados
+Saídas
 
 output\backup_genesys_DATA_HORA.csv
 output\filas_DATA_HORA.csv
 output\skills_DATA_HORA.csv
+
 filas.csv
 skills.csv
 
-Os arquivos normalizados retiram nome e ID do mesmo objeto retornado
-pela API, evitando associações incorretas entre listas ordenadas
-separadamente.
+Os CSVs normalizados obtêm nome e ID do mesmo objeto retornado pela API,
+evitando associações incorretas.
 
-APIs utilizadas
+<details>
 
-Método                  Endpoint                                 Função
+<summary>
 
-POST                    /api/v2/users/search                   Localiza o usuário
-exatamente por
-e-mail/username
+<strong>{=html}Endpoints utilizados</strong>{=html}
 
-GET                     /api/v2/users/{userId}/queues          Lista filas do usuário
+</summary>
 
-02 - Remover filas e skills
+Método                  Endpoint                                 Uso
 
-Remove associações existentes com planejamento prévio e confirmação
-posterior.
+POST                  /api/v2/users/search                   Busca exata do usuário
 
-DRY RUN
+GET                   /api/v2/users/{userId}/queues          Filas do usuário
+
+GET                   /api/v2/users/{userId}/routingskills   Skills e proficiency
+
+</details>
+
+🧹 02 · Remover filas e skills
+
+Objetivo: remover associações existentes com planejamento e
+validação posterior.
+
+🧪 DRY RUN
 
 py .\02_remover_filas_skills.py
 
-Execução
+🔴 Execução real
 
 py .\02_remover_filas_skills.py --execute
 
-Confirmação:
+Digite:
 
 REMOVER
 
-Após cada alteração, o estado do usuário é consultado novamente. Uma
-remoção só é registrada como REMOVIDA_CONFIRMADA quando o ID realmente
-desaparece.
+[!CAUTION] Este script realiza remoções. Revise o plano apresentado
+no DRY RUN antes de utilizar --execute.
 
-APIs utilizadas
+Após cada alteração, o estado é consultado novamente. A remoção somente
+é registrada como confirmada quando o ID deixa de aparecer no estado
+atual.
 
-Método                  Endpoint                                                 Função
+<details>
 
-GET                     /api/v2/users/{userId}/queues                          Consulta filas e
-confirma remoção
+<summary>
 
-GET                     /api/v2/users/{userId}/routingskills                   Consulta skills e
-confirma remoção
+<strong>{=html}Endpoints utilizados</strong>{=html}
 
-DELETE                  /api/v2/users/{userId}/routingskills/{skillId}         Remove uma skill
+</summary>
 
-POST                    /api/v2/routing/queues/{queueId}/members?delete=true   Remove usuário da fila
+Método                  Endpoint                                                 Uso
 
-Body para remoção de membro da fila:
+GET                   /api/v2/users/{userId}/queues                          Consulta/validação de
+filas
+
+GET                   /api/v2/users/{userId}/routingskills                   Consulta/validação de
+skills
+
+DELETE                /api/v2/users/{userId}/routingskills/{skillId}         Remove skill
+
+POST                  /api/v2/routing/queues/{queueId}/members?delete=true   Remove membro da fila
+
+Body da remoção de fila:
 
 [
   {
@@ -248,15 +304,16 @@ Body para remoção de membro da fila:
   }
 ]
 
-A documentação de origem registra que esta versão do script 02 lê o
-backup resumido backup_genesys_*.csv. Uma evolução indicada é
-fazê-lo consumir diretamente os backups normalizados.
+</details>
 
-03 - Adicionar skills
+[!NOTE] A documentação atual registra que o 02 consome o backup
+resumido backup_genesys_*.csv. Uma evolução do projeto é fazê-lo
+consumir diretamente os backups normalizados.
 
-Aplica as associações descritas em skills.csv. O script resolve o
-usuário por e-mail, localiza a skill pelo nome no ambiente atual e
-adiciona ou atualiza a proficiency.
+🧠 03 · Adicionar skills
+
+Objetivo: aplicar as associações de skills.csv e ajustar a
+proficiency.
 
 DRY RUN
 
@@ -270,25 +327,38 @@ Confirmação:
 
 ADICIONAR
 
-APIs utilizadas
+O fluxo resolve:
 
-Método                  Endpoint                                           Função
+E-mail
+  ↓
+Usuário
+  ↓
+Nome da skill
+  ↓
+Skill do ambiente atual
+  ↓
+Já existe?
+  ├─ NÃO → POST
+  └─ SIM → compara proficiency → PUT quando necessário
 
-POST                    /api/v2/users/search                             Resolve o usuário
+<details>
 
-GET                     /api/v2/routing/skills                           Procura a skill pelo
-nome
+<summary>
 
-GET                     /api/v2/routing/skills/{skillId}                 Consulta uma skill
+<strong>{=html}Endpoints utilizados</strong>{=html}
 
-GET                     /api/v2/users/{userId}/routingskills             Consulta e verifica
-skills atuais
+</summary>
 
-POST                    /api/v2/users/{userId}/routingskills             Adiciona uma skill
+Método   Endpoint
 
-PUT                     /api/v2/users/{userId}/routingskills/{skillId}   Atualiza proficiency
+POST   /api/v2/users/search
+GET    /api/v2/routing/skills
+GET    /api/v2/routing/skills/{skillId}
+GET    /api/v2/users/{userId}/routingskills
+POST   /api/v2/users/{userId}/routingskills
+PUT    /api/v2/users/{userId}/routingskills/{skillId}
 
-Exemplo de body:
+Exemplo:
 
 {
   "id": "SKILL_ID",
@@ -296,40 +366,45 @@ Exemplo de body:
   "proficiency": 5
 }
 
-04 - Adicionar filas
+</details>
 
-Aplica as associações descritas em filas.csv.
+👥 04 · Adicionar filas
 
-O usuário é resolvido pelo e-mail. Para a fila, o script tenta primeiro
-queue_id, quando informado, e utiliza o nome exato como alternativa.
+Objetivo: aplicar as associações definidas em filas.csv.
 
-DRY RUN
-
+# DRY RUN
 py .\04_adicionar_filas.py
 
-Execução
-
+# Execução
 py .\04_adicionar_filas.py --execute
 
 Confirmação:
 
 ADICIONAR
 
-APIs utilizadas
+Para localizar a fila, o script tenta:
 
-Método                  Endpoint                                     Função
+queue_id informado
+       ↓
+   ID válido?
+   ├─ SIM → utiliza a fila
+   └─ NÃO → procura pelo nome exato
 
-POST                    /api/v2/users/search                       Resolve o usuário
+<details>
 
-GET                     /api/v2/routing/queues                     Procura fila pelo nome
+<summary>
 
-GET                     /api/v2/routing/queues/{queueId}           Valida/localiza fila
-pelo ID
+<strong>{=html}Endpoints utilizados</strong>{=html}
 
-GET                     /api/v2/users/{userId}/queues              Consulta e confirma
-filas
+</summary>
 
-POST                    /api/v2/routing/queues/{queueId}/members   Adiciona usuário à fila
+Método   Endpoint
+
+POST   /api/v2/users/search
+GET    /api/v2/routing/queues
+GET    /api/v2/routing/queues/{queueId}
+GET    /api/v2/users/{userId}/queues
+POST   /api/v2/routing/queues/{queueId}/members
 
 Body:
 
@@ -339,40 +414,42 @@ Body:
   }
 ]
 
-05 - Adicionar usuários ao grupo
+</details>
 
-Adiciona os usuários de usuarios.csv ao grupo definido em
+🏷️ 05 · Adicionar usuários ao grupo
+
+Objetivo: adicionar os usuários de usuarios.csv ao
 GROUP_DESTINO.
 
-Antes de alterar, o script consulta os membros atuais e ignora usuários
-que já pertencem ao grupo.
-
-DRY RUN
-
+# DRY RUN
 py .\05_adicionar_grupo.py
 
-Execução
-
+# Execução
 py .\05_adicionar_grupo.py --execute
 
 Confirmação:
 
 ADICIONAR
 
-APIs utilizadas
+O script consulta os membros existentes e ignora usuários que já
+pertencem ao grupo.
 
-Método                  Endpoint                             Função
+<details>
 
-POST                    /api/v2/users/search               Resolve o usuário
+<summary>
 
-GET                     /api/v2/groups                     Localiza o grupo
+<strong>{=html}Endpoints utilizados</strong>{=html}
 
-GET                     /api/v2/groups/{groupId}/members   Lista membros e
-confirma inclusão
+</summary>
 
-POST                    /api/v2/groups/{groupId}/members   Adiciona membros
+Método   Endpoint
 
-Body:
+POST   /api/v2/users/search
+GET    /api/v2/groups
+GET    /api/v2/groups/{groupId}/members
+POST   /api/v2/groups/{groupId}/members
+
+Body correto:
 
 {
   "memberIds": [
@@ -380,202 +457,178 @@ Body:
   ]
 }
 
-Enviar somente uma lista de strings causou HTTP 400 bad.request no
+Enviar somente uma lista de strings causou 400 bad.request no
 ambiente documentado.
 
-Consulta de fila e skill
+</details>
 
-O consulta.py gera duas listas independentes:
+🔎 Consulta de fila e skill
 
-todos os usuários da fila, tenham ou não a skill;
+Gera duas listas independentes:
 
-todos os usuários com a skill, estejam ou não na fila.
+todos os usuários da fila;
 
-Usuários presentes nos dois conjuntos continuam aparecendo nos dois
-CSVs.
+todos os usuários com a skill.
+
+A interseção é apenas informativa.
 
 py .\consulta.py
 
-O script solicita o nome exato da fila e da skill.
-
-Saída
+Arquivos gerados
 
 output\fila_NOME_DA_FILA.csv
 output\skill_NOME_DA_SKILL.csv
 
-A interseção mostrada no terminal é apenas informativa.
+<details>
 
-APIs utilizadas
+<summary>
 
-Método                  Endpoint                                     Função
+<strong>{=html}Endpoints utilizados</strong>{=html}
 
-GET                     /api/v2/routing/queues                     Localiza a fila
+</summary>
 
-GET                     /api/v2/routing/skills                     Localiza a skill
+Método                  Endpoint                                     Uso
 
-GET                     /api/v2/routing/queues/{queueId}/members   Lista membros da fila
+GET                   /api/v2/routing/queues                     Localiza a fila
 
-Fluxo operacional recomendado
+GET                   /api/v2/routing/skills                     Localiza a skill
 
-01 Backup
-   ↓
-Revisar CSVs e backups
-   ↓
-02 DRY RUN → Remover associações
-   ↓
-03 DRY RUN → Aplicar skills
-   ↓
-04 DRY RUN → Aplicar filas
-   ↓
-05 DRY RUN → Aplicar grupo
-   ↓
-Consulta / validação
+GET                   /api/v2/routing/queues/{queueId}/members   Lista membros
 
-Etapa Ação               Comando
+</details>
 
-    1 Gerar backup       `py .\01_exportar_filas_skills.py`
-    2 Revisar CSVs       Conferir `filas.csv`, `skills.csv` e backups
-    3 Simular remoção    `py .\02_remover_filas_skills.py`
-    4 Executar remoção   `py .\02_remover_filas_skills.py --execute`
-    5 Simular skills     `py .\03_adicionar_skills.py`
-    6 Aplicar skills     `py .\03_adicionar_skills.py --execute`
-    7 Simular filas      `py .\04_adicionar_filas.py`
-    8 Aplicar filas      `py .\04_adicionar_filas.py --execute`
-    9 Simular grupo      `py .\05_adicionar_grupo.py`
-   10 Aplicar grupo      `py .\05_adicionar_grupo.py --execute`
-   11 Consultar          `py .\consulta.py`
+🛡️ Segurança operacional
 
-DRY RUN, confirmações e logs
+[!CAUTION] Os scripts 02, 03, 04 e 05 podem alterar dados do
+Genesys Cloud. Use o ambiente correto, faça backup e valide o DRY RUN.
 
-Script            Flag              Confirmação       Log
+Checklist antes de --execute
 
-02                --execute       REMOVER         output\remocao_DATA_HORA.csv
+Executei o script 01
 
-03                --execute       ADICIONAR       output\adicao_skills_DATA_HORA.csv
+Preservei o backup em output
 
-04                --execute       ADICIONAR       output\adicao_filas_DATA_HORA.csv
+Conferi REGION, LOGIN_URL e API_URL
 
-05                --execute       ADICIONAR       output\adicao_grupo_DATA_HORA.csv
+Revisei usuarios.csv
 
-Sem --execute, os scripts de alteração montam o plano sem modificar o
-Genesys Cloud.
+Revisei filas.csv / skills.csv
 
-Permissões do OAuth Client
+Executei o DRY RUN
 
-O OAuth Client deve possuir as roles/permissões necessárias para os
-recursos consultados ou alterados.
+Conferi uma amostra dos usuários
 
-Se a autenticação funcionar, mas uma chamada retornar 403, verifique
-as permissões relacionadas a:
+Tenho certeza de que estou no ambiente correto
 
-Users;
+📝 Logs
 
-Routing / Queues;
+Script   Confirmação   Log
 
-Routing Skills;
+02     REMOVER     output\remocao_DATA_HORA.csv
+03     ADICIONAR   output\adicao_skills_DATA_HORA.csv
+04     ADICIONAR   output\adicao_filas_DATA_HORA.csv
+05     ADICIONAR   output\adicao_grupo_DATA_HORA.csv
 
-Groups.
+🚨 Troubleshooting
 
-Evite conceder permissões mais amplas do que o necessário.
+HTTP / Sintoma                      Verifique
 
-Erros comuns
+🔑 401 Unauthorized               Credenciais, token e região
 
-Sintoma                             Causa provável / ação
+🚫 403 Forbidden                  Roles/permissões do OAuth Client
 
-401 Unauthorized                  Token expirado, credencial inválida
-ou região incorreta
+🔍 404                            ID, ambiente e associação
 
-403 Forbidden                     OAuth Client sem permissão para o
-recurso
+⏳ 429 Too Many Requests          Rate limit / Retry-After
 
-404                               ID inexistente no ambiente ou
-associação/endpoint inválido
+⚠️ 400 bad.request no grupo       Body com memberIds
 
-429 Too Many Requests             Rate limit; aguardar
-Retry-After/backoff
+👥 Fila não encontrada              queue_id ou nome exato
 
-400 bad.request no grupo          Usar {"memberIds":["USER_ID"]}
+🧠 Skill ID diferente               Resolução pelo nome no ambiente
+atual
 
-Fila não encontrada                 Verificar queue_id ou nome exato
+🔒 .gitignore recomendado
 
-Skill ID diferente entre ambientes  Resolver a skill pelo nome no
-ambiente atual
+Crie um .gitignore antes de publicar o repositório:
 
-Segurança
-
-Nunca publique CLIENT_SECRET.
-
-Mantenha config.py fora do controle de versão quando contiver
-credenciais reais.
-
-Execute o script 01 antes de alterações em lote.
-
-Preserve os backups históricos em output.
-
-Execute sempre o DRY RUN antes de --execute.
-
-Confira região e API_URL antes de operações destrutivas.
-
-Não edite IDs manualmente sem confirmar a qual ambiente pertencem.
-
-Preserve logs para auditoria e diagnóstico.
-
-Regenere imediatamente qualquer secret exposto.
-
-.gitignore recomendado
-
-# Credenciais
+# 🔐 Credenciais
 config.py
 .env
 
-# Dados operacionais
+# 👤 Dados operacionais
 usuarios.csv
 filas.csv
 skills.csv
 output/
 
-# Python
+# 🐍 Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
 
-# IDE / SO
+# 💻 IDE / SO
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
 
-Antes do primeiro git push, revise também o histórico do repositório
-para garantir que nenhum secret tenha sido commitado anteriormente.
+[!WARNING] .gitignore não remove segredos que já foram commitados.
+Antes de tornar o repositório público, confira também o histórico do
+Git.
 
-Referência rápida
+⚡ Referência rápida
 
-# Backup
+# 01 • Backup
 py .\01_exportar_filas_skills.py
 
-# Remoção
+# 02 • Remoção
 py .\02_remover_filas_skills.py
 py .\02_remover_filas_skills.py --execute
 
-# Skills
+# 03 • Skills
 py .\03_adicionar_skills.py
 py .\03_adicionar_skills.py --execute
 
-# Filas
+# 04 • Filas
 py .\04_adicionar_filas.py
 py .\04_adicionar_filas.py --execute
 
-# Grupo
+# 05 • Grupo
 py .\05_adicionar_grupo.py
 py .\05_adicionar_grupo.py --execute
 
 # Consulta
 py .\consulta.py
 
-Referência técnica
+🗺️ Roadmap
 
-A documentação operacional deste repositório foi construída a partir dos
-scripts desenvolvidos e testados no projeto.
+Algumas evoluções naturais do projeto:
 
-Para detalhes oficiais sobre endpoints, modelos, autenticação e
+Fazer o script 02 consumir diretamente backups normalizados
+
+Separar configuração pública de credenciais
+
+Adicionar testes automatizados
+
+Criar validação prévia dos CSVs
+
+Adicionar exemplos de arquivos sem dados reais
+
+Criar relatório consolidado após operações em lote
+
+📚 Referência
+
+A documentação deste repositório foi construída a partir dos scripts
+desenvolvidos e testados no projeto.
+
+Para contratos oficiais da API, modelos, autenticação e permissões,
+consulte o Genesys Cloud Developer Center.
+
+::: {align="center"}
+
+☁️ Genesys Cloud Automation Toolkit
+
+Automação com backup primeiro, validação antes e confirmação depois.
+:::
